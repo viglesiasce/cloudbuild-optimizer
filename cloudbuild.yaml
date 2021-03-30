@@ -1,0 +1,23 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull gcr.io/$PROJECT_ID/linux-builder:latest || exit 0']
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: bash
+    args:
+    - -c
+    - |
+      docker build --cache-from gcr.io/$PROJECT_ID/linux-builder:latest -t gcr.io/$PROJECT_ID/linux-builder:latest .
+      docker push gcr.io/$PROJECT_ID/linux-builder:latest
+  - name: 'gcr.io/$PROJECT_ID/linux-builder:latest'
+    entrypoint: bash
+    args:
+    - -c
+    - |
+      git clone --depth 1 https://github.com/torvalds/linux
+      cd linux
+      cp /boot/config-$(uname -r) .config
+      make olddefconfig
+      make clean
+      make -j $(getconf _NPROCESSORS_ONLN) deb-pkg LOCALVERSION=-custom
+timeout: 6000s
