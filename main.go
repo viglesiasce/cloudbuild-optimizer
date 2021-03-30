@@ -26,6 +26,8 @@ func main() {
 	resultChan := make(chan Result)
 	done := make(chan bool)
 
+	fmt.Printf("View your builds here: https://console.cloud.google.com/cloud-build/builds\n\n")
+
 	// Run cloud build for each machine type
 	for mt := range machineTypes {
 		go runBuild(mt, resultChan, done)
@@ -38,9 +40,9 @@ func main() {
 	}
 	close(resultChan)
 
-	// Print table of cost
+	// Print table of costs
 	for _, result := range results {
-		fmt.Printf("Build took %v on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
+		fmt.Printf("Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
 	}
 }
 
@@ -48,9 +50,6 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 	command := "gcloud"
 	args := strings.Split(fmt.Sprintf("builds submit . --machine-type=%s", machineType), " ")
 	cmd := exec.Command(command, args...)
-	// stderr, _ := cmd.StderrPipe()
-	// stdout, _ := cmd.StdoutPipe()
-
 	// Start build timer
 	startTime := time.Now()
 
@@ -59,16 +58,6 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 	cmd.Env = []string{"PYTHONUNBUFFERED=TRUE"}
 	cmd.Start()
 
-	// // Get STDOUT and STDERR buffers
-	// outscanner := bufio.NewScanner(stdout)
-	// errscanner := bufio.NewScanner(stderr)
-	// for errscanner.Scan() || outscanner.Scan() {
-	// 	o := outscanner.Text()
-	// 	fmt.Print(o)
-	// 	e := errscanner.Text()
-	// 	fmt.Print(e)
-	// 	fmt.Println()
-	// }
 	err := cmd.Wait()
 	endTime := time.Now()
 	diff := endTime.Sub(startTime)
