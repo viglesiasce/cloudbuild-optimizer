@@ -16,8 +16,7 @@ type Result struct {
 func main() {
 	// Mapping of machine types to their price per minute
 	machineTypes := map[string]float64{
-		"N1_HIGHCPU_8":  0.016,
-		"N1_HIGHCPU_32": 0.064,
+		"DEFAULT":       0.003,
 		"E2_HIGHCPU_8":  0.016,
 		"E2_HIGHCPU_32": 0.064,
 	}
@@ -48,7 +47,11 @@ func main() {
 
 func runBuild(machineType string, result chan Result, done chan bool) {
 	command := "gcloud"
-	args := strings.Split(fmt.Sprintf("builds submit . --machine-type=%s", machineType), " ")
+
+	args := strings.Split("builds submit .", " ")
+	if machineType != "DEFAULT" {
+		args = append(args, fmt.Sprintf("--machine-type=%s", machineType))
+	}
 	cmd := exec.Command(command, args...)
 	// Start build timer
 	startTime := time.Now()
