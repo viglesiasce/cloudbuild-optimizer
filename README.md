@@ -4,6 +4,8 @@ This tool allows you to quickly run your Cloud Build configuration against multi
 
 Once the jobs are complete you get a read out of the time each took and how much they cost.
 
+![Example screen recording](example/demo.gif)
+
 ## Quick Start
 
 This repo includes and example `cloudbuild.yaml` that compiles the Linux kernel. 
