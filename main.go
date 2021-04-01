@@ -40,6 +40,7 @@ func main() {
 	close(resultChan)
 
 	// Print table of costs
+	fmt.Println()
 	for _, result := range results {
 		fmt.Printf("Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
 	}
