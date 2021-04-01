@@ -11,18 +11,18 @@ Once the jobs are complete you get a read out of the time each took and how much
 This repo includes and example `cloudbuild.yaml` that compiles the Linux kernel. 
 Below are the steps to test out that configuration across the available Cloud Build machine types.
 
-1. Download the latest release:
-
-    ```shell
-    curl -L https://github.com/viglesiasce/cloudbuild-optimizer/releases/download/v0.2.0/cloudbuild-optimizer_0.2.0_$(uname)_$(uname -m) -o cloudbuild-optimizer
-    chmod +x cloudbuild-optimizer
-    ```
-
 1. Clone this repo and change directories to the `example` folder:
 
     ```shell
     git clone https://github.com/viglesiasce/cloudbuild-optimizer
     cd cloudbuild-optimizer/example
+    ```
+
+1. Download the latest release:
+
+    ```shell
+    curl -L https://github.com/viglesiasce/cloudbuild-optimizer/releases/download/v0.2.0/cloudbuild-optimizer_0.2.0_$(uname)_$(uname -m) -o cloudbuild-optimizer
+    chmod +x cloudbuild-optimizer
     ```
 
 1. Run the tool.
