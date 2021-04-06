@@ -25,7 +25,12 @@ func main() {
 	resultChan := make(chan Result)
 	done := make(chan bool)
 
-	fmt.Printf("View your builds here: https://console.cloud.google.com/cloud-build/builds\n\n")
+	// View builds in console
+	qs := ""
+	if arg, err := getProject(); err == nil && arg != "" {
+		qs += "?project=" + arg
+	}
+	fmt.Printf("View your builds here: https://console.cloud.google.com/cloud-build/builds%s\n\n", qs)
 
 	// Run cloud build for each machine type
 	for mt := range machineTypes {
@@ -69,4 +74,15 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 
 	// Send result of build
 	result <- Result{Err: err, Duration: diff, MachineType: machineType}
+}
+
+func getProject() (string, error) {
+	args := strings.Split("config get-value project", " ")
+	cmd := exec.Command("gcloud", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
+		return "", err
+	}
+	return string(output), err
 }
