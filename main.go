@@ -11,6 +11,7 @@ type Result struct {
 	Err         error
 	Duration    time.Duration
 	MachineType string
+	Stderr      string
 }
 
 func main() {
@@ -47,7 +48,11 @@ func main() {
 	// Print table of costs
 	fmt.Println()
 	for _, result := range results {
-		fmt.Printf("Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
+		if result.Err != nil {
+			fmt.Printf("[FAILED] Build took %v minutes on %v\n", result.Duration, result.MachineType)
+		} else {
+			fmt.Printf("[SUCCESS] Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
+		}
 	}
 }
 
@@ -65,15 +70,20 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 	// Run command
 	fmt.Printf("Starting build on %s...\n", machineType)
 	cmd.Env = []string{"PYTHONUNBUFFERED=TRUE"}
-	cmd.Start()
+	// cmd.Start()
 
-	err := cmd.Wait()
+	stdoutStderr, err := cmd.CombinedOutput()
+	var stderr string
+	if err != nil {
+		stderr = string(stdoutStderr)
+		fmt.Printf(stderr)
+	}
 	endTime := time.Now()
 	diff := endTime.Sub(startTime)
 	fmt.Printf("Build completed on %s in %.2f minutes.\n", machineType, diff.Minutes())
 
 	// Send result of build
-	result <- Result{Err: err, Duration: diff, MachineType: machineType}
+	result <- Result{Err: err, Stderr: stderr, Duration: diff, MachineType: machineType}
 }
 
 func getProject() (string, error) {
