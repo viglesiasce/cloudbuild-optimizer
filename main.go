@@ -11,6 +11,7 @@ type Result struct {
 	Err         error
 	Duration    time.Duration
 	MachineType string
+	Stderr      string
 }
 
 func main() {
@@ -25,7 +26,12 @@ func main() {
 	resultChan := make(chan Result)
 	done := make(chan bool)
 
-	fmt.Printf("View your builds here: https://console.cloud.google.com/cloud-build/builds\n\n")
+	// View builds in console
+	qs := ""
+	if arg, err := getProject(); err == nil && arg != "" {
+		qs += "?project=" + arg
+	}
+	fmt.Printf("View your builds here: https://console.cloud.google.com/cloud-build/builds%s\n\n", qs)
 
 	// Run cloud build for each machine type
 	for mt := range machineTypes {
@@ -42,7 +48,11 @@ func main() {
 	// Print table of costs
 	fmt.Println()
 	for _, result := range results {
-		fmt.Printf("Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
+		if result.Err != nil {
+			fmt.Printf("[FAILED] Build took %v minutes on %v\n", result.Duration, result.MachineType)
+		} else {
+			fmt.Printf("[SUCCESS] Build took %v minutes on %v and cost $%.3f\n", result.Duration, result.MachineType, result.Duration.Minutes()*machineTypes[result.MachineType])
+		}
 	}
 }
 
@@ -60,13 +70,29 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 	// Run command
 	fmt.Printf("Starting build on %s...\n", machineType)
 	cmd.Env = []string{"PYTHONUNBUFFERED=TRUE"}
-	cmd.Start()
+	// cmd.Start()
 
-	err := cmd.Wait()
+	stdoutStderr, err := cmd.CombinedOutput()
+	var stderr string
+	if err != nil {
+		stderr = string(stdoutStderr)
+		fmt.Printf(stderr)
+	}
 	endTime := time.Now()
 	diff := endTime.Sub(startTime)
 	fmt.Printf("Build completed on %s in %.2f minutes.\n", machineType, diff.Minutes())
 
 	// Send result of build
-	result <- Result{Err: err, Duration: diff, MachineType: machineType}
+	result <- Result{Err: err, Stderr: stderr, Duration: diff, MachineType: machineType}
+}
+
+func getProject() (string, error) {
+	args := strings.Split("config get-value project", " ")
+	cmd := exec.Command("gcloud", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
+		return "", err
+	}
+	return string(output), err
 }

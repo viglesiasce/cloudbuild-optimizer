@@ -21,7 +21,7 @@ Below are the steps to test out that configuration across the available Cloud Bu
 1. Download the latest release:
 
     ```shell
-    curl -L https://github.com/viglesiasce/cloudbuild-optimizer/releases/download/v0.2.0/cloudbuild-optimizer_0.2.0_$(uname)_$(uname -m) -o cloudbuild-optimizer
+    curl -L "https://github.com/viglesiasce/cloudbuild-optimizer/releases/download/v0.2.0/cloudbuild-optimizer_0.2.0_$(uname)_$(uname -m)" -o cloudbuild-optimizer
     chmod +x cloudbuild-optimizer
     ```
 
