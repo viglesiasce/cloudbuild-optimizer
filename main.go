@@ -70,7 +70,6 @@ func runBuild(machineType string, result chan Result, done chan bool) {
 	// Run command
 	fmt.Printf("Starting build on %s...\n", machineType)
 	cmd.Env = []string{"PYTHONUNBUFFERED=TRUE"}
-	// cmd.Start()
 
 	stdoutStderr, err := cmd.CombinedOutput()
 	var stderr string
