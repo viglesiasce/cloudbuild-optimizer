@@ -4,5 +4,4 @@ steps:
     args:
       - '-c'
       - |
-        go build
-
+        go build -v
